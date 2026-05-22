@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>To Do List - Alarmes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+            font-size: 26px;
+        }
+
+        h1 span {
+            color: #667eea;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        .datetime-group {
+            background: #f8f9fa;
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .datetime-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .datetime-inputs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .datetime-inputs input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 400px) {
+            .input-section {
+                flex-direction: row;
+            }
+        }
+
+        #newTask {
+            flex: 1;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 14px;
+            font-size: 16px;
+            background: #f8f9fa;
+        }
+
+        #newTask:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        #addBtn {
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: #f0f2f5;
+            padding: 12px 16px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .stat-card.total .stat-number { color: #667eea; }
+        .stat-card.completed .stat-number { color: #10b981; }
+        .stat-card.pending .stat-number { color: #f59e0b; }
+
+        .task-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .task-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 14px;
+            margin-bottom: 8px;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .task-check {
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: #667eea;
+            flex-shrink: 0;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 15px;
+            color: #1a1a2e;
+            word-break: break-word;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 10px;
+            color: #ef4444;
+            flex-shrink: 0;
+        }
+
+        .task-dates {
+            margin-left: 34px;
+            margin-top: 6px;
+            font-size: 10px;
+        }
+
+        .task-created {
+            color: #888;
+        }
+
+        .task-completed-date {
+            color: #10b981;
+        }
+
+        .task-due {
+            margin-top: 4px;
+        }
+
+        .task-due-time {
+            background: #e8e8e8;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            display: inline-block;
+        }
+
+        .task-due-time.overdue {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .task-due-time.soon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .task-status {
+            margin-left: 34px;
+            margin-top: 4px;
+            font-size: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-badge.completed {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-badge.overdue {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+        }
+
+        .clear-btn {
+            width: 100%;
+            padding: 12px;
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .alarm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .alarm-modal.show {
+            display: flex;
+        }
+
+        .alarm-content {
+            background: white;
+            border-radius: 32px;
+            padding: 30px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .alarm-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .alarm-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .alarm-task {
+            background: #f0f2f5;
+            padding: 15px;
+            border-radius: 16px;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .alarm-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .alarm-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .snooze-btn {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .ignore-btn {
+            background: #e0e0e0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⏰ <span>To Do</span> List</h1>
+        <div class="subtitle">Avec rappels et alarmes</div>
+
+        <div class="datetime-group">
+            <div class="datetime-label">📅 Date et heure d'échéance</div>
+            <div class="datetime-inputs">
+                <input type="date" id="dueDate">
+                <input type="time" id="dueTime">
+            </div>
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="newTask" placeholder="Nom de la tâche..." onkeypress="handleKeyPress(event)">
+            <button id="addBtn" onclick="addTaskWithDateTime()">+ Ajouter</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card total">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card completed">
+                <div class="stat-number" id="completedCount">0</div>
+                <div class="stat-label">Faites</div>
+            </div>
+            <div class="stat-card pending">
+                <div class="stat-number" id="pendingCount">0</div>
+                <div class="stat-label">Restantes</div>
+            </div>
+        </div>
+
+        <ul class="task-list" id="taskList"></ul>
+
+        <button class="clear-btn" onclick="clearAllTasks()">🗑️ Supprimer toutes les tâches</button>
+    </div>
+
+    <div id="alarmModal" class="alarm-modal">
+        <div class="alarm-content">
+            <div class="alarm-icon">⏰</div>
+            <div class="alarm-title">Rappel</div>
+            <div class="alarm-task" id="alarmTaskText"></div>
+            <div class="alarm-buttons">
+                <button class="snooze-btn" onclick="snoozeAlarm()">⏸ Reporter 5min</button>
+                <button class="ignore-btn" onclick="ignoreAlarm()">✔ Ignorer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        let activeAlarm = null;
+        let alarmInterval = null;
+        let audioContext = null;
+
+        // Jouer un son (fonctionne sans fichier externe)
+        function playBeep() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = 880;
+                gainNode.gain.value = 0.3;
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1);
+                oscillator.stop(audioContext.currentTime + 1);
+            } catch(e) {
+                console.log("Son non supporté");
+            }
+        }
+
+        // Vibration
+        function vibrate() {
+            if (navigator.vibrate) {
+                navigator.vibrate([300, 100, 300]);
+            }
+        }
+
+        // Notification
+        function showNotification(title, body) {
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/633/633605.png' });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        new Notification(title, { body: body });
+                    }
+                });
+            }
+        }
+
+        // Charger les tâches (avec vérification)
+        function loadTasks() {
+            const saved = localStorage.getItem('todo_tasks_complete');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    tasks = parsed.map(task => ({
+                        ...task,
+                        createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+                        completedAt: task.completedAt ? new Date(task.completedAt) : null,
+                        dueDate: task.dueDate ? new Date(task.dueDate) : null,
+                        snoozeUntil: task.snoozeUntil ? new Date(task.snoozeUntil) : null
+                    }));
+                } catch(e) {
+                    tasks = [];
+                }
+            }
+            renderTasks();
+            startAlarmChecker();
+        }
+
+        // Sauvegarder les tâches
+        function saveTasks() {
+            const toSave = tasks.map(task => ({
+                id: task.id,
+                text: task.text,
+                completed: task.completed,
+                createdAt: task.createdAt ? task.createdAt.toISOString() : null,
+                completedAt: task.completedAt ? task.completedAt.toISOString() : null,
+                dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+                alarmTriggered15: task.alarmTriggered15,
+                alarmTriggered5: task.alarmTriggered5,
+                snoozeUntil: task.snoozeUntil ? task.snoozeUntil.toISOString() : null
+            }));
+            localStorage.setItem('todo_tasks_complete', JSON.stringify(toSave));
+        }
+
+        function addTaskWithDateTime() {
+            const input = document.getElementById('newTask');
+            const text = input.value.trim();
+            const dateStr = document.getElementById('dueDate').value;
+            const timeStr = document.getElementById('dueTime').value;
+
+            if (text === '') {
+                alert("📝 Entrez une tâche !");
+                return;
+            }
+
+            let dueDate = null;
+            if (dateStr && timeStr) {
+                dueDate = new Date(`${dateStr}T${timeStr}`);
+                if (isNaN(dueDate.getTime())) {
+                    dueDate = null;
+                }
+            }
+
+            tasks.unshift({
+                id: Date.now(),
+                text: text,
+                completed: false,
+                createdAt: new Date(),
+                completedAt: null,
+                dueDate: dueDate,
+                alarmTriggered15: false,
+                alarmTriggered5: false,
+                snoozeUntil: null
+            });
+
+            input.value = '';
+            document.getElementById('dueDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('dueTime').value = '18:00';
+            saveTasks();
+            renderTasks();
+        }
+
+        function startAlarmChecker() {
+            if (alarmInterval) clearInterval(alarmInterval);
+            alarmInterval = setInterval(checkAlarms, 5000);
+        }
+
+        function checkAlarms() {
+            const now = new Date();
+            
+            tasks.forEach(task => {
+                if (task.completed) return;
+                if (task.snoozeUntil && new Date(task.snoozeUntil) > now) return;
+                if (!task.dueDate) return;
+                
+                const diffMs = task.dueDate.getTime() - now.getTime();
+                const diffMin = Math.floor(diffMs / (1000 * 60));
+                
+                // Alarme 15 minutes avant
+                if (diffMin <= 15 && diffMin > 10 && !task.alarmTriggered15) {
+                    task.alarmTriggered15 = true;
+                    triggerAlarm(task, "15 minutes");
+                    saveTasks();
+                }
+                
+                // Alarme 5 minutes avant
+                if (diffMin <= 5 && diffMin > 0 && !task.alarmTriggered5) {
+                    task.alarmTriggered5 = true;
+                    triggerAlarm(task, "5 minutes");
+                    saveTasks();
+                }
+            });
+            
+            renderTasks();
+        }
+
+        function triggerAlarm(task, minutes) {
+            showNotification("⏰ Rappel To Do List", `${task.text} - dans ${minutes}`);
+            playBeep();
+            vibrate();
+            
+            const modal = document.getElementById('alarmModal');
+            const taskText = document.getElementById('alarmTaskText');
+            taskText.innerHTML = `${task.text}<br><span style="font-size:12px; color:#666;">⚠️ ${minutes} restantes</span>`;
+            modal.classList.add('show');
+            activeAlarm = task.id;
+        }
+
+        function snoozeAlarm() {
+            if (activeAlarm) {
+                const task = tasks.find(t => t.id === activeAlarm);
+                if (task) {
+                    const snoozeTime = new Date();
+                    snoozeTime.setMinutes(snoozeTime.getMinutes() + 5);
+                    task.snoozeUntil = snoozeTime;
+                    saveTasks();
+                }
+            }
+            closeAlarmModal();
+            renderTasks();
+        }
+
+        function ignoreAlarm() {
+            if (activeAlarm) {
+                const task = tasks.find(t => t.id === activeAlarm);
+                if (task) {
+                    task.alarmTriggered15 = true;
+                    task.alarmTriggered5 = true;
+                    saveTasks();
+                }
+            }
+            closeAlarmModal();
+            renderTasks();
+        }
+
+        function closeAlarmModal() {
+            const modal = document.getElementById('alarmModal');
+            modal.classList.remove('show');
+            activeAlarm = null;
+        }
+
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                if (task.completed) {
+                    task.completedAt = new Date();
+                } else {
+                    task.completedAt = null;
+                }
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            renderTasks();
+        }
+
+        function clearAllTasks() {
+            if (tasks.length > 0 && confirm('⚠️ Supprimer TOUTES les tâches ? Cette action est irréversible.')) {
+                tasks = [];
+                saveTasks();
+                renderTasks();
+            }
+        }
+
+        function updateStats() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const pending = total - completed;
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('pendingCount').textContent = pending;
+        }
+
+        function getTaskStatus(task) {
+            if (task.completed) return { text: "✅ Terminée", class: "completed" };
+            if (task.dueDate && new Date(task.dueDate) < new Date()) return { text: "⏰ En retard", class: "overdue" };
+            if (task.dueDate) {
+                const diff = Math.floor((task.dueDate - new Date()) / (1000 * 60));
+                if (diff < 60) return { text: `⚠️ Dans ${diff} min`, class: "soon" };
+            }
+            return { text: "⏳ En attente", class: "pending" };
+        }
+
+        function formatDate(date) {
+            if (!date) return null;
+            return date.toLocaleDateString() + ' à ' + date.toLocaleTimeString().slice(0,5);
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            updateStats();
+
+            if (tasks.length === 0) {
+                taskList.innerHTML = `<li class="empty-message"><div>📋 Aucune tâche</div><div style="font-size:12px;">Ajoutez une tâche avec une date/heure</div></li>`;
+                return;
+            }
+
+            taskList.innerHTML = tasks.map(task => {
+                const status = getTaskStatus(task);
+                let dueHtml = '';
+                if (task.dueDate && !task.completed) {
+                    dueHtml = `<div class="task-due"><span class="task-due-time ${status.class === 'overdue' ? 'overdue' : (status.class === 'soon' ? 'soon' : '')}">📅 Échéance: ${formatDate(task.dueDate)}</span></div>`;
+                }
+                
+                let snoozeHtml = '';
+                if (task.snoozeUntil && new Date(task.snoozeUntil) > new Date() && !task.completed) {
+                    snoozeHtml = `<div class="task-due"><span class="task-due-time" style="background:#fef3c7;">⏸ Rappel dans quelques minutes</span></div>`;
+                }
+
+                return `
+                    <li class="task-item">
+                        <div class="task-header">
+                            <input type="checkbox" class="task-check" 
+                                   ${task.completed ? 'checked' : ''} 
+                                   onchange="toggleTask(${task.id})">
+                            <div class="task-text ${task.completed ? 'completed' : ''}">${escapeHtml(task.text)}</div>
+                            <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️</button>
+                        </div>
+                        <div class="task-dates">
+                            <span class="task-created">📝 Créée le: ${formatDate(task.createdAt)}</span>
+                            ${task.completedAt ? `<br><span class="task-completed-date">✅ Terminée le: ${formatDate(task.completedAt)}</span>` : ''}
+                        </div>
+                        <div class="task-status">
+                            <span class="status-badge ${status.class}">${status.text}</span>
+                        </div>
+                        ${dueHtml}
+                        ${snoozeHtml}
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                addTaskWithDateTime();
+            }
+        }
+
+        // Initialisation
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dueDate').value = today;
+        document.getElementById('dueTime').value = '18:00';
+
+        loadTasks();
+
+        // Sauvegarde automatique avant de quitter
+        window.addEventListener('beforeunload', () => {
+            saveTasks();
+        });
+    </script>
+</body>
+</html>
